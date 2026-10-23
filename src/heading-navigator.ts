@@ -393,13 +393,13 @@ export class HeadingNavigatorModal extends Modal {
     this.statusEl.setText(`${count} ${query ? "matching " : ""}heading${count === 1 ? "" : "s"}`);
   }
 
-  private cycleMatches(): void {
+  cycleMatches(): void {
     if (this.matchIndexes.length === 0) return;
     this.matchCursor = (this.matchCursor + 1) % this.matchIndexes.length;
     this.selectHeading(this.matchIndexes[this.matchCursor], true);
   }
 
-  private moveSelection(direction: number): void {
+  moveSelection(direction: number): void {
     if (this.headings.length === 0) return;
     this.selectHeading(
       (this.selectedIndex + direction + this.headings.length) % this.headings.length,
@@ -453,7 +453,7 @@ export class HeadingNavigatorModal extends Modal {
     void this.jumpToSelected();
   }
 
-  private async jumpToSelected(): Promise<void> {
+  async jumpToSelected(): Promise<void> {
     const heading = this.headings[this.selectedIndex];
     if (!heading) return;
     this.close();

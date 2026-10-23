@@ -233,6 +233,7 @@ export class FloatingSearchModal extends Modal {
 
   onOpen(): void {
     this.containerEl.addClass("floating-search-container");
+    this.containerEl.toggleClass("is-background-blur-disabled", !this.plugin.settings.blurBackground);
     this.modalEl.addClass("floating-search-modal");
     this.contentEl.addClass("floating-search-content");
     this.disposeViewport = installResponsiveViewport(this.containerEl, Platform.isMobileApp);
@@ -361,7 +362,7 @@ export class FloatingSearchModal extends Modal {
     });
   }
 
-  private moveSelection(direction: number): void {
+  moveSelection(direction: number): void {
     if (this.results.length === 0) return;
     this.selectResult(
       (this.selectedIndex + direction + this.results.length) % this.results.length,
@@ -714,7 +715,7 @@ export class FloatingSearchModal extends Modal {
     this.resultsEl.empty();
   }
 
-  private async openSelected(): Promise<void> {
+  async openSelected(): Promise<void> {
     const result = this.results[this.selectedIndex];
     if (!result) return;
     this.close();

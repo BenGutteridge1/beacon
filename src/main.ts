@@ -17,6 +17,7 @@ import type {
 
 const DEFAULT_SETTINGS: FloatingSearchSettings = {
   defaultScope: "file",
+  blurBackground: true,
   fuzzy: false,
   excludeHeadingMatches: false,
   excludeExcalidrawData: false,
@@ -46,6 +47,7 @@ export default class FloatingSearchPlugin extends Plugin {
     this.addCommand({
       id: "open-current-file-search",
       name: "Open search for current file",
+      icon: "file-search",
       checkCallback: (checking) => {
         const available = this.app.workspace.getActiveFile()?.extension === "md";
         if (available && !checking) this.openSearch("file");
@@ -55,11 +57,13 @@ export default class FloatingSearchPlugin extends Plugin {
     this.addCommand({
       id: "open-vault-search",
       name: "Open search for all files",
+      icon: "search",
       callback: () => this.openSearch("vault"),
     });
     this.addCommand({
       id: "toggle-search-scope",
       name: "Toggle current file / all files",
+      icon: "arrow-left-right",
       callback: () => {
         if (this.activeModal) void this.activeModal.toggleScope();
         else this.openSearch(this.settings.defaultScope === "file" ? "vault" : "file");
@@ -68,6 +72,7 @@ export default class FloatingSearchPlugin extends Plugin {
     this.addCommand({
       id: "cycle-result-sort",
       name: "Cycle result sorting",
+      icon: "list-filter",
       callback: () => {
         if (this.activeModal) void this.activeModal.cycleSort();
         else void this.cycleStoredSort();
@@ -76,6 +81,7 @@ export default class FloatingSearchPlugin extends Plugin {
     this.addCommand({
       id: "open-property-search",
       name: "Open property search",
+      icon: "braces",
       callback: () => {
         if (this.activeModal) void this.activeModal.setScope("properties");
         else this.openSearch("properties");
@@ -84,6 +90,7 @@ export default class FloatingSearchPlugin extends Plugin {
     this.addCommand({
       id: "open-tag-search",
       name: "Open tag search",
+      icon: "tags",
       callback: () => {
         if (this.activeModal) void this.activeModal.setScope("tags");
         else this.openSearch("tags");
@@ -92,12 +99,74 @@ export default class FloatingSearchPlugin extends Plugin {
     this.addCommand({
       id: "open-heading-navigator",
       name: "Open heading navigator for current file",
+      icon: "list-tree",
       checkCallback: (checking) => {
         const available = this.app.workspace.getActiveFile()?.extension === "md";
         if (available && !checking) this.openHeadingNavigator();
         return available;
       },
     });
+    this.addCommand({
+      id: "select-previous-item",
+      name: "Select previous result or heading",
+      icon: "arrow-up",
+      checkCallback: (checking) => {
+        const modal = this.activeModal ?? this.activeHeadingNavigator;
+        if (!modal) return false;
+        if (!checking) modal.moveSelection(-1);
+        return true;
+      },
+    });
+    this.addCommand({
+      id: "select-next-item",
+      name: "Select next result or heading",
+      icon: "arrow-down",
+      checkCallback: (checking) => {
+        const modal = this.activeModal ?? this.activeHeadingNavigator;
+        if (!modal) return false;
+        if (!checking) modal.moveSelection(1);
+        return true;
+      },
+    });
+    this.addCommand({
+      id: "activate-selected-item",
+      name: "Open selected result or heading",
+      icon: "corner-down-left",
+      checkCallback: (checking) => {
+        const available = Boolean(this.activeModal ?? this.activeHeadingNavigator);
+        if (available && !checking) {
+          if (this.activeModal) void this.activeModal.openSelected();
+          else void this.activeHeadingNavigator?.jumpToSelected();
+        }
+        return available;
+      },
+    });
+    this.addCommand({
+      id: "select-next-matching-heading",
+      name: "Select next matching heading",
+      icon: "repeat",
+      checkCallback: (checking) => {
+        if (!this.activeHeadingNavigator) return false;
+        if (!checking) this.activeHeadingNavigator.cycleMatches();
+        return true;
+      },
+    });
+    this.addCommand({
+      id: "close-active-panel",
+      name: "Close search or heading navigator",
+      icon: "x",
+      checkCallback: (checking) => {
+        const modal = this.activeModal ?? this.activeHeadingNavigator;
+        if (!modal) return false;
+        if (!checking) modal.close();
+        return true;
+      },
+    });
+  }
+
+  onunload(): void {
+    this.activeModal?.close();
+    this.activeHeadingNavigator?.close();
   }
 
   openSearch(scope: SearchScope): void {
@@ -155,6 +224,7 @@ export default class FloatingSearchPlugin extends Plugin {
     const loaded = (await this.loadData()) as Partial<FloatingSearchSettings> | null;
     this.settings = {
       defaultScope: loaded?.defaultScope === "vault" ? "vault" : "file",
+      blurBackground: loaded?.blurBackground ?? DEFAULT_SETTINGS.blurBackground,
       fuzzy: loaded?.fuzzy ?? DEFAULT_SETTINGS.fuzzy,
       excludeHeadingMatches:
         loaded?.excludeHeadingMatches ?? DEFAULT_SETTINGS.excludeHeadingMatches,
@@ -200,6 +270,15 @@ class FloatingSearchSettingTab extends PluginSettingTab {
           key: "defaultScope",
           options: { file: "This file", vault: "All files" },
           defaultValue: DEFAULT_SETTINGS.defaultScope,
+        },
+      },
+      {
+        name: "Blur background",
+        desc: "Blur the note behind the search panel. Applies the next time search is opened.",
+        control: {
+          type: "toggle",
+          key: "blurBackground",
+          defaultValue: DEFAULT_SETTINGS.blurBackground,
         },
       },
       {
@@ -278,6 +357,7 @@ class FloatingSearchSettingTab extends PluginSettingTab {
         }
         return;
       case "fuzzy":
+      case "blurBackground":
       case "excludeHeadingMatches":
       case "excludeExcalidrawData":
       case "excludeExcalidrawDataFromHeadings":

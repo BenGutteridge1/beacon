@@ -1,0 +1,96 @@
+name: Prepare release
+
+on:
+  push:
+    tags: ["*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to build, attest, and prepare as a draft release
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ env.RELEASE_TAG }}
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate release version
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from "node:assert/strict";
+          import { readFileSync } from "node:fs";
+          const manifest = JSON.parse(readFileSync("manifest.json", "utf8"));
+          const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
+          const versions = JSON.parse(readFileSync("versions.json", "utf8"));
+          assert.match(process.env.RELEASE_TAG, /^\d+\.\d+\.\d+$/);
+          assert.equal(process.env.RELEASE_TAG, manifest.version);
+          assert.equal(packageJson.version, manifest.version);
+          assert.equal(versions[manifest.version], manifest.minAppVersion);
+          NODE
+
+      - name: Check release does not already exist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY"; then
+            echo "A release already exists for $RELEASE_TAG. No assets will be replaced."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run Obsidian plugin lint
+        run: npm run lint
+
+      - name: Build plugin
+        run: npm run build
+
+      - name: Attest release assets
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          create-storage-record: false
+          subject-path: |
+            main.js
+            manifest.json
+            styles.css
+
+      - name: Create draft release with attested assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --verify-tag \
+            --draft \
+            --title "Beacon $RELEASE_TAG" \
+            --generate-notes \
+            main.js manifest.json styles.css

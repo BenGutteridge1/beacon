@@ -13,6 +13,7 @@ export interface SearchContentOptions {
 
 export interface FloatingSearchSettings {
   defaultScope: FileSearchScope;
+  blurBackground: boolean;
   fuzzy: boolean;
   excludeHeadingMatches: boolean;
   excludeExcalidrawData: boolean;

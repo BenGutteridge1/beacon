@@ -36,7 +36,7 @@ Open the heading navigator to browse the outline for the focused note. It shows 
 
 Beacon supports the same search modes, query syntax, sorting, rendered results, result jumps, and heading navigator on Obsidian Mobile. The panels follow the visible screen as the software keyboard opens, respect device safe areas, use touch-sized controls, and avoid reopening the keyboard after a result or heading jump. Mobile indexing and Markdown rendering yield in smaller batches to keep scrolling and typing responsive while preserving the desktop behavior and layout.
 
-Open Beacon from the command palette, or add any Beacon command to Obsidian's mobile toolbar or Quick Action. Hardware-keyboard hotkeys continue to work when a keyboard is connected.
+Open Beacon from the command palette, or add any Beacon command to Obsidian's mobile toolbar or Quick Action. Each command has its own distinct icon. To configure the native toolbar, open **Settings → Interface → Configure mobile toolbar → Add a command...** and search for **Beacon**. See [Obsidian's mobile toolbar guide](https://help.obsidian.md/mobile) for adding and reordering commands. With a hardware keyboard connected, use the built-in panel keys listed below.
 
 ## Query syntax
 
@@ -64,20 +64,32 @@ Operators are optional. Changing search mode never modifies the search term. Pro
 
 ## Commands and hotkeys
 
-| Command |
-| --- |
-| Open search for current file |
-| Open search for all files |
-| Toggle current file / all files |
-| Cycle result sorting |
-| Open property search |
-| Open tag search |
-| Open heading navigator for current file |
+| Command | Built-in key inside the relevant Beacon panel |
+| --- | --- |
+| Open search for current file | — |
+| Open search for all files | — |
+| Toggle current file / all files | `Mod+Alt+F` |
+| Cycle result sorting | `Mod+Alt+S` |
+| Open property search | — |
+| Open tag search | — |
+| Open heading navigator for current file | — |
+| Select previous result or heading | `ArrowUp` |
+| Select next result or heading | `ArrowDown` |
+| Open selected result or heading | `Enter` in search; `Shift+Enter` in headings |
+| Select next matching heading | `Enter` in headings |
+| Close search or heading navigator | `Esc` |
 
-Assign any shortcut you prefer in **Settings → Hotkeys → Beacon**. While the search panel is open, `Mod+Alt+F` toggles between current-file and all-files search, `Mod+Alt+S` cycles sorting, the arrow keys navigate results, and `Enter` opens the selected result. In the heading navigator, `Enter` cycles matching headings, `Shift+Enter` jumps to the selected heading, and the arrow keys move through the full outline.
+Assign global shortcuts for launching Beacon from the editor in **Settings → Hotkeys → Beacon**. Inside an open Beacon panel, use the built-in keys in the table. Customized global command shortcuts are not dispatched to the panel, so assigning a different shortcut there does not remap its built-in keys.
+
+While the search panel is open, `Mod+Alt+F` toggles between current-file and all-files search, `Mod+Alt+S` cycles sorting, the arrow keys navigate results, and `Enter` opens the selected result. In the heading navigator, `Enter` cycles matching headings, `Shift+Enter` jumps to the selected heading, and the arrow keys move through the full outline.
+
+The previous/next, open selected, next matching heading, and close commands operate on the open Beacon panel. **Open selected result or heading** opens the selected search result or jumps to the selected heading; **Select next matching heading** matches the heading navigator's `Enter` action. No global hotkeys are assigned by default.
+
+All twelve commands can be configured in the native mobile toolbar. Beacon does not add a toolbar inside its panels. Whether Obsidian's editor toolbar remains reachable while a Beacon panel is open has not been verified on physical iOS/Android; use the panel's existing touch controls or built-in keys if the editor toolbar is covered.
 
 ## Settings
 
+- **Blur background** controls whether the note behind the search panel is blurred. It is on by default and applies the next time search is opened.
 - **Fuzzy matching** enables inexact matching without adding a control to the search bar.
 - **Exclude heading matches** hides search cards caused only by heading-line matches.
 - **Exclude Excalidraw data** omits generated drawing content from ordinary search.
@@ -112,6 +124,20 @@ npm run build
 ```
 
 For local development, symlink this project into that plugin directory and run `npm run dev`.
+
+### Preparing a release
+
+Set matching versions in `manifest.json` and `package.json`, and add the version and minimum Obsidian version to `versions.json`. Push a version tag such as `1.5.1` to run **Prepare release**, or run that workflow manually with an existing version tag. The tag must match the manifest version exactly, without a `v` prefix.
+
+The workflow runs the tests, lint, and production build, generates GitHub build-provenance attestations for `main.js`, `manifest.json`, and `styles.css`, and uploads those same files to a **draft** release. Review the generated release notes and publish the draft when ready. Existing releases and assets are never replaced; delete an unwanted draft before retrying its tag.
+
+After downloading a release asset, verify its provenance with the [GitHub CLI](https://cli.github.com/manual/gh_attestation_verify):
+
+```bash
+gh attestation verify main.js --repo BenGutteridge1/beacon
+gh attestation verify manifest.json --repo BenGutteridge1/beacon
+gh attestation verify styles.css --repo BenGutteridge1/beacon
+```
 
 ## License
 
