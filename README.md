@@ -36,7 +36,7 @@ Open the heading navigator to browse the outline for the focused note. It shows 
 
 Beacon supports the same search modes, query syntax, sorting, rendered results, result jumps, and heading navigator on Obsidian Mobile. The panels follow the visible screen as the software keyboard opens, respect device safe areas, use touch-sized controls, and avoid reopening the keyboard after a result or heading jump. Mobile indexing and Markdown rendering yield in smaller batches to keep scrolling and typing responsive while preserving the desktop behavior and layout.
 
-Open Beacon from the command palette, or add any Beacon command to Obsidian's mobile toolbar or Quick Action. Each command has its own distinct icon. To configure the native toolbar, open **Settings → Interface → Configure mobile toolbar → Add a command...** and search for **Beacon**. See [Obsidian's mobile toolbar guide](https://help.obsidian.md/mobile) for adding and reordering commands. With a hardware keyboard connected, use the built-in panel keys listed below.
+Open global search from the **Search all files** ribbon icon or the command palette, or add any Beacon command to Obsidian's mobile toolbar or Quick Action. Each command has its own distinct icon. To configure the native toolbar, open **Settings → Interface → Configure mobile toolbar → Add a command...** and search for **Beacon**. See [Obsidian's mobile toolbar guide](https://help.obsidian.md/mobile) for adding and reordering commands. With a hardware keyboard connected, use the built-in panel keys listed below.
 
 ## Query syntax
 
@@ -127,7 +127,7 @@ For local development, symlink this project into that plugin directory and run `
 
 ### Preparing a release
 
-Set matching versions in `manifest.json` and `package.json`, and add the version and minimum Obsidian version to `versions.json`. Push a version tag such as `1.5.1` to run **Prepare release**, or run that workflow manually with an existing version tag. The tag must match the manifest version exactly, without a `v` prefix.
+Set matching versions in `manifest.json` and `package.json`, and add the version and minimum Obsidian version to `versions.json`. Push a version tag such as `1.5.2` to run **Prepare release**, or run that workflow manually with an existing version tag. The tag must match the manifest version exactly, without a `v` prefix.
 
 The workflow runs the tests, lint, and production build, generates GitHub build-provenance attestations for `main.js`, `manifest.json`, and `styles.css`, and uploads those same files to a **draft** release. Review the generated release notes and publish the draft when ready. Existing releases and assets are never replaced; delete an unwanted draft before retrying its tag.
 

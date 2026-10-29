@@ -162,6 +162,10 @@ export default class FloatingSearchPlugin extends Plugin {
         return true;
       },
     });
+
+    this.addRibbonIcon("search", "Search all files", () => {
+      this.openSearch("vault");
+    });
   }
 
   onunload(): void {
@@ -253,6 +257,7 @@ export default class FloatingSearchPlugin extends Plugin {
     const next = sorts[(sorts.indexOf(this.settings.sort) + 1) % sorts.length];
     await this.updateSettings({ sort: next });
   }
+
 }
 
 class FloatingSearchSettingTab extends PluginSettingTab {
